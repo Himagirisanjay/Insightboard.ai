@@ -1,29 +1,50 @@
 "use client";
-import { useState } from "react";
+import React from "react";
 
-export default function TaskList({ tasks, setTasks }: { tasks: any[], setTasks: (t: any[]) => void }) {
-  function toggleStatus(index: number) {
-    const updated = tasks.map((t, i) => i === index ? { ...t, status: t.status === "pending" ? "done" : "pending" } : t);
-    setTasks(updated);
-  }
+type Task = { id: number; task: string; completed: boolean; };
 
-  function deleteTask(index: number) {
-    setTasks(tasks.filter((_, i) => i !== index));
+export default function TaskList({
+  tasks,
+  onToggle,
+  onDelete,
+}: {
+  tasks: Task[];
+  onToggle: (id: number) => void;
+  onDelete: (id: number) => void;
+}) {
+  if (!tasks || tasks.length === 0) {
+    return <div className="p-6 text-center text-gray-500">No tasks yet — generate from a transcript.</div>;
   }
 
   return (
-    <div className="space-y-2">
-      {tasks.map((t, i) => (
-        <div key={i} className="flex justify-between items-center border-b py-2">
-          <span className={t.status === "done" ? "line-through text-gray-400" : ""}>{t.task}</span>
-          <div>
-            <button onClick={() => toggleStatus(i)} className="text-green-600 text-sm mr-2">
-              {t.status === "done" ? "Undo" : "Done"}
-            </button>
-            <button onClick={() => deleteTask(i)} className="text-red-500 text-sm">Delete</button>
+    <ul className="space-y-3">
+      {tasks.map((t) => (
+        <li
+          key={t.id}
+          className="flex items-start gap-4 p-3 border rounded-md shadow-sm"
+        >
+          <input
+            type="checkbox"
+            checked={t.completed}
+            onChange={() => onToggle(t.id)}
+            className="mt-1 h-4 w-4"
+          />
+          <div className="flex-1">
+            <div className={`text-sm leading-relaxed ${t.completed ? "line-through text-gray-400" : ""}`}>
+              {t.task}
+            </div>
           </div>
-        </div>
+
+          <div className="pl-4">
+            <button
+              onClick={() => onDelete(t.id)}
+              className="text-sm text-red-600 hover:underline"
+            >
+              Delete
+            </button>
+          </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

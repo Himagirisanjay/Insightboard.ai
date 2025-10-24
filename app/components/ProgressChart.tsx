@@ -1,23 +1,51 @@
 "use client";
-import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import React from "react";
 
-export default function ProgressChart({ tasks }: { tasks: any[] }) {
-  const completed = tasks.filter(t => t.status === "done").length;
-  const pending = tasks.length - completed;
-  const data = [
-    { name: "Completed", value: completed },
-    { name: "Pending", value: pending },
-  ];
-  const COLORS = ["#10b981", "#f43f5e"];
+export default function ProgressChart({ completed, pending }: { completed: number; pending: number }) {
+  const total = completed + pending || 1;
+  const pct = Math.round((completed / total) * 100);
+
+  const radius = 64;
+  const stroke = 18;
+  const normalizedRadius = radius - stroke / 2;
+  const circumference = normalizedRadius * 2 * Math.PI;
+  const dash = (pct / 100) * circumference;
 
   return (
-    <div className="flex justify-center">
-      <PieChart width={200} height={200}>
-        <Pie data={data} dataKey="value" outerRadius={80}>
-          {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-        </Pie>
-        <Tooltip />
-      </PieChart>
+    <div className="flex flex-col items-center">
+      <svg height={radius * 2} width={radius * 2}>
+        <defs>
+          <linearGradient id="g1" x1="0%" x2="100%">
+            <stop offset="0%" stopColor="#ff8a00" />
+            <stop offset="100%" stopColor="#ff3d00" />
+          </linearGradient>
+        </defs>
+
+        <circle
+          stroke="#f1f1f1"
+          fill="transparent"
+          strokeWidth={stroke}
+          r={normalizedRadius}
+          cx={radius}
+          cy={radius}
+        />
+        <circle
+          stroke="url(#g1)"
+          fill="transparent"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={`${dash} ${circumference - dash}`}
+          r={normalizedRadius}
+          cx={radius}
+          cy={radius}
+          transform={`rotate(-90 ${radius} ${radius})`}
+        />
+      </svg>
+
+      <div className="text-center mt-2">
+        <div className="text-2xl font-semibold">{pct}%</div>
+        <div className="text-xs text-gray-500">{completed} done — {pending} pending</div>
+      </div>
     </div>
   );
 }
